@@ -347,6 +347,16 @@ function resetSelection() {
   drawScene();
 }
 
+function positionMobileScene() {
+  if (window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches) {
+    sceneWrap.scrollLeft = Math.max(0, (sceneWrap.scrollWidth - sceneWrap.clientWidth) / 2);
+    sceneWrap.scrollTop = Math.max(0, (sceneWrap.scrollHeight - sceneWrap.clientHeight) / 2);
+  } else {
+    sceneWrap.scrollLeft = 0;
+    sceneWrap.scrollTop = 0;
+  }
+}
+
 function startGame() {
   clearInterval(timerId);
   stopBackgroundMusic();
@@ -367,6 +377,7 @@ function startGame() {
   selectionPopover.classList.remove("visible");
   hintModal.classList.remove("visible");
   startBackgroundMusic();
+  requestAnimationFrame(positionMobileScene);
   timerId = setInterval(() => {
     if (!gameActive) return;
     timeLeft -= 1;
@@ -511,4 +522,8 @@ targetList.addEventListener("pointerup", () => {
 
 targetList.addEventListener("pointercancel", () => {
   targetDragActive = false;
+});
+
+window.addEventListener("orientationchange", () => {
+  setTimeout(positionMobileScene, 120);
 });
