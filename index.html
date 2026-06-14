@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>带薪拉屎玩什么</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-label="粑粑标志">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M31 8c7 7 3 11-3 15 7-1 17 3 17 11 0 3-1 5-3 7 8 1 14 5 14 11 0 8-11 12-25 12S6 60 6 52c0-6 6-10 14-11-2-2-3-4-3-7 0-6 6-10 13-11-4-4-3-9 1-15Z"/>
+            <path d="M23 44c2 2 5 3 9 3s7-1 9-3" class="brand-mark-line"/>
+          </svg>
+        </span>
+        <div>
+          <h1>带薪拉屎玩什么</h1>
+          <p>今日场景 · 漫画卧室</p>
+        </div>
+      </div>
+
+      <button class="hint-cta" id="hintButton" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.7.5 1 1.2 1 2.3h6c0-1.1.3-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg>
+        <span>找不到点这里</span>
+      </button>
+
+      <div class="status-cluster">
+        <div class="status-item timer" id="timerBox">
+          <span class="status-label">剩余时间</span>
+          <strong id="timer">05:00</strong>
+        </div>
+        <div class="status-item">
+          <span class="status-label">已找到</span>
+          <strong><span id="foundCount">0</span>/<span id="totalCount">8</span></strong>
+        </div>
+        <button class="icon-button" id="soundButton" type="button" aria-label="切换声音" title="切换声音">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Zm5.2 3.2a5.4 5.4 0 0 1 0 7.6M19 5.4a9 9 0 0 1 0 13.2"/></svg>
+        </button>
+        <button class="icon-button" id="restartButton" type="button" aria-label="重新开始" title="重新开始">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="target-panel">
+      <div class="target-heading">
+        <div>
+          <span class="eyebrow">本局任务</span>
+          <h2>请找到这些物品</h2>
+        </div>
+      <p id="tipText">寻找藏入场景的物品，也别忽略房间原有陈设</p>
+      </div>
+      <div class="target-list" id="targetList"></div>
+    </section>
+
+    <section class="scene-wrap" id="sceneWrap">
+      <canvas id="gameCanvas" width="1280" height="720" aria-label="寻物游戏场景"></canvas>
+      <div class="scene-vignette"></div>
+      <div class="scene-tag">第 <span id="roundNumber">01</span> 局</div>
+      <div class="penalty" id="penalty">-5秒</div>
+
+      <div class="selection-popover" id="selectionPopover">
+        <span>确定选择这里？</span>
+        <button class="confirm-button" id="confirmButton" type="button">确认</button>
+        <button class="cancel-button" id="cancelButton" type="button" aria-label="取消">×</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop visible" id="startModal">
+    <section class="modal">
+      <div class="modal-symbol poop-symbol">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M31 8c7 7 3 11-3 15 7-1 17 3 17 11 0 3-1 5-3 7 8 1 14 5 14 11 0 8-11 12-25 12S6 60 6 52c0-6 6-10 14-11-2-2-3-4-3-7 0-6 6-10 13-11-4-4-3-9 1-15Z"/>
+          <path d="M23 44c2 2 5 3 9 3s7-1 9-3" class="poop-line"/>
+        </svg>
+      </div>
+      <span class="eyebrow">带薪拉屎玩什么</span>
+      <h2>卧室里藏着什么？</h2>
+      <p>在五分钟内找到清单中的全部物品。它们会伪装成家具细节或只露出一角，每次点错会扣除 5 秒。</p>
+      <button class="primary-button" id="startButton" type="button">开始寻找</button>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="resultModal">
+    <section class="modal">
+      <div class="modal-symbol" id="resultSymbol">✓</div>
+      <span class="eyebrow" id="resultEyebrow">寻物完成</span>
+      <h2 id="resultTitle">全部找到了！</h2>
+      <p id="resultText"></p>
+      <button class="primary-button" id="againButton" type="button">再玩一局</button>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="hintModal">
+    <section class="modal hint-modal">
+      <div class="modal-symbol">!</div>
+      <span class="eyebrow">请求提醒</span>
+      <h2>先输入认输文字</h2>
+      <p>请手动输入：<strong id="surrenderPhrase">我是大笨蛋</strong></p>
+      <input class="surrender-input" id="surrenderInput" type="text" autocomplete="off" spellcheck="false">
+      <p class="hint-error" id="hintError"></p>
+      <div class="modal-actions">
+        <button class="primary-button" id="submitHintButton" type="button">提交并提醒</button>
+        <button class="secondary-button" id="cancelHintButton" type="button">取消</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
