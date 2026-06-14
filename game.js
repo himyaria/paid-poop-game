@@ -13,6 +13,7 @@ const hintModal = document.getElementById("hintModal");
 const surrenderInput = document.getElementById("surrenderInput");
 const surrenderPhraseElement = document.getElementById("surrenderPhrase");
 const hintError = document.getElementById("hintError");
+const introMusic = document.getElementById("introMusic");
 const backgroundMusic = document.getElementById("backgroundMusic");
 
 const backgroundImage = new Image();
@@ -93,7 +94,8 @@ let audioContext = null;
 let hintMarker = null;
 let currentSurrenderPhrase = "";
 let hintPulseStarted = 0;
-backgroundMusic.volume = 0.42;
+introMusic.volume = 0.48;
+backgroundMusic.volume = 0.78;
 
 function shuffle(list) {
   return [...list].sort(() => Math.random() - 0.5);
@@ -310,6 +312,7 @@ function tone(frequency, duration) {
 
 function startBackgroundMusic() {
   if (!soundOn) return;
+  introMusic.pause();
   backgroundMusic.currentTime = 0;
   backgroundMusic.play().catch(() => {
     soundOn = false;
@@ -320,6 +323,11 @@ function startBackgroundMusic() {
 
 function stopBackgroundMusic() {
   backgroundMusic.pause();
+}
+
+function startIntroMusic() {
+  if (!soundOn || gameActive || !startModal.classList.contains("visible")) return;
+  introMusic.play().catch(() => {});
 }
 
 function applyMistake() {
@@ -447,8 +455,11 @@ document.getElementById("soundButton").addEventListener("click", () => {
   document.getElementById("soundButton").title = soundOn ? "关闭声音" : "开启声音";
   if (soundOn && gameActive) {
     startBackgroundMusic();
+  } else if (soundOn) {
+    startIntroMusic();
   } else {
     stopBackgroundMusic();
+    introMusic.pause();
   }
 });
 
@@ -473,6 +484,10 @@ function submitHint() {
 backgroundImage.onload = drawScene;
 spriteImage.onload = drawScene;
 extraSpriteImage.onload = drawScene;
+
+document.addEventListener("pointerdown", startIntroMusic, { once: true });
+document.addEventListener("keydown", startIntroMusic, { once: true });
+startIntroMusic();
 
 let targetDragActive = false;
 let targetDragStartX = 0;
