@@ -574,27 +574,33 @@ button {
 
 @media (max-width: 600px) {
   .game-shell {
-    padding: 8px 8px max(14px, env(safe-area-inset-bottom));
+    padding: 8px 8px max(12px, env(safe-area-inset-bottom));
   }
 
   .topbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand brand"
+      "hint status";
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+    gap: 7px 8px;
+    min-height: 0;
+    margin-bottom: 7px;
+    padding: 0 0 8px;
   }
 
   .hint-cta {
     position: static;
-    grid-column: 1 / -1;
-    width: 100%;
-    height: 46px;
+    grid-area: hint;
+    width: min(100%, 170px);
+    height: 42px;
     min-width: 0;
+    padding: 0 13px;
+    justify-self: start;
     transform: none;
-    font-size: 14px;
+    font-size: 13px;
+    box-shadow: none;
   }
 
   .brand p,
@@ -603,25 +609,44 @@ button {
     display: none;
   }
 
+  .brand {
+    grid-area: brand;
+    gap: 8px;
+    min-width: 0;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--line);
+  }
+
   .brand-mark {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+  }
+
+  .brand-mark svg {
+    width: 26px;
+    height: 26px;
   }
 
   .brand h1 {
+    overflow: hidden;
     font-size: 20px;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .status-cluster {
-    gap: 4px;
+    grid-area: status;
+    gap: 3px;
     justify-self: end;
   }
 
   .status-item {
     height: 42px;
-    min-width: 66px;
-    padding: 3px 8px;
+    min-width: 58px;
+    padding: 3px 6px;
+    border: 1px solid var(--line);
+    text-align: center;
   }
 
   .icon-button {
@@ -702,44 +727,55 @@ button {
   }
 
   .target-panel {
-    gap: 7px;
-    margin-bottom: 8px;
+    gap: 5px;
+    margin-bottom: 6px;
   }
 
   .target-heading {
     align-items: center;
+    min-height: 24px;
+    padding: 0 2px;
+  }
+
+  .target-heading .eyebrow {
+    display: none;
   }
 
   .target-heading h2 {
-    margin-top: 1px;
-    font-size: 14px;
+    margin: 0;
+    color: #d8cfbd;
+    font-size: 12px;
   }
 
   .target-list {
-    grid-auto-columns: 82px;
-    gap: 6px;
-    padding-bottom: 5px;
+    grid-auto-columns: 74px;
+    gap: 5px;
+    padding-bottom: 4px;
     scroll-snap-type: x proximity;
   }
 
   .target-item {
-    min-height: 64px;
+    min-height: 58px;
     scroll-snap-align: start;
   }
 
   .sprite-icon {
-    width: 34px;
-    height: 45px;
+    width: 30px;
+    height: 40px;
   }
 
   .native-icon {
-    width: 42px;
-    height: 33px;
+    width: 39px;
+    height: 30px;
   }
 
   .extra-icon {
-    width: 46px;
-    height: 31px;
+    width: 42px;
+    height: 28px;
+  }
+
+  .target-item .object-name {
+    font-size: 9px;
   }
 
   .selection-popover span {
@@ -747,7 +783,7 @@ button {
   }
 
   .modal-backdrop {
-    align-items: end;
+    place-items: center;
     padding: 12px 8px max(8px, env(safe-area-inset-bottom));
   }
 
@@ -800,5 +836,28 @@ button {
   .scene-tag {
     position: absolute;
     margin-top: 0;
+  }
+}
+
+@media (max-width: 350px) {
+  .hint-cta {
+    width: 132px;
+    padding-inline: 8px;
+    gap: 5px;
+    font-size: 12px;
+  }
+
+  .hint-cta svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .status-item {
+    min-width: 54px;
+    font-size: 15px;
+  }
+
+  .icon-button {
+    width: 39px;
   }
 }
