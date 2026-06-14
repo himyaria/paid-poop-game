@@ -89,9 +89,19 @@ let gameActive = false;
 let round = 0;
 let soundOn = true;
 let audioContext = null;
+let musicTimerId = null;
+let musicStep = 0;
 let hintMarker = null;
 let currentSurrenderPhrase = "";
 let hintPulseStarted = 0;
+
+const musicMelody = [
+  523.25, 659.25, 783.99, 659.25,
+  587.33, 698.46, 880, 698.46,
+  493.88, 659.25, 783.99, 659.25,
+  523.25, 659.25, 880, 783.99
+];
+const musicBass = [261.63, 293.66, 246.94, 261.63];
 
 function shuffle(list) {
   return [...list].sort(() => Math.random() - 0.5);
@@ -303,6 +313,48 @@ function tone(frequency, duration) {
   oscillator.stop(audioContext.currentTime + duration);
 }
 
+function playMusicVoice(frequency, duration, volume, type = "triangle", delay = 0) {
+  if (!soundOn || !audioContext) return;
+  const startAt = audioContext.currentTime + delay;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+  gain.gain.setValueAtTime(0.001, startAt);
+  gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.018);
+  gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+  oscillator.start(startAt);
+  oscillator.stop(startAt + duration + 0.03);
+}
+
+function playMusicStep() {
+  const melodyNote = musicMelody[musicStep % musicMelody.length];
+  playMusicVoice(melodyNote, 0.42, 0.025);
+  playMusicVoice(melodyNote * 2, 0.2, 0.008, "sine", 0.045);
+  if (musicStep % 4 === 0) {
+    const bassNote = musicBass[Math.floor(musicStep / 4) % musicBass.length];
+    playMusicVoice(bassNote, 0.9, 0.018, "sine");
+    playMusicVoice(bassNote * 1.5, 0.7, 0.008, "triangle", 0.08);
+  }
+  musicStep += 1;
+}
+
+function startBackgroundMusic() {
+  if (!soundOn || musicTimerId) return;
+  audioContext ||= new AudioContext();
+  audioContext.resume();
+  musicStep = 0;
+  playMusicStep();
+  musicTimerId = setInterval(playMusicStep, 430);
+}
+
+function stopBackgroundMusic() {
+  clearInterval(musicTimerId);
+  musicTimerId = null;
+}
+
 function applyMistake() {
   timeLeft = Math.max(0, timeLeft - 5);
   updateTimer();
@@ -322,6 +374,7 @@ function resetSelection() {
 
 function startGame() {
   clearInterval(timerId);
+  stopBackgroundMusic();
   round += 1;
   document.getElementById("roundNumber").textContent = String(round).padStart(2, "0");
   timeLeft = 300;
@@ -338,6 +391,7 @@ function startGame() {
   hintModal.classList.remove("visible");
   selectionPopover.classList.remove("visible");
   hintModal.classList.remove("visible");
+  startBackgroundMusic();
   timerId = setInterval(() => {
     if (!gameActive) return;
     timeLeft -= 1;
@@ -349,6 +403,7 @@ function startGame() {
 function finishGame(won) {
   gameActive = false;
   clearInterval(timerId);
+  stopBackgroundMusic();
   selectionPopover.classList.remove("visible");
   document.getElementById("resultSymbol").textContent = won ? "✓" : "⌛";
   document.getElementById("resultEyebrow").textContent = won ? "寻物完成" : "时间到";
@@ -422,6 +477,12 @@ surrenderInput.addEventListener("keydown", (event) => {
 document.getElementById("soundButton").addEventListener("click", () => {
   soundOn = !soundOn;
   document.getElementById("soundButton").style.opacity = soundOn ? "1" : ".4";
+  document.getElementById("soundButton").title = soundOn ? "关闭声音" : "开启声音";
+  if (soundOn && gameActive) {
+    startBackgroundMusic();
+  } else {
+    stopBackgroundMusic();
+  }
 });
 
 function submitHint() {
