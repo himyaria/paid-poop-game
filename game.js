@@ -13,6 +13,7 @@ const hintModal = document.getElementById("hintModal");
 const surrenderInput = document.getElementById("surrenderInput");
 const surrenderPhraseElement = document.getElementById("surrenderPhrase");
 const hintError = document.getElementById("hintError");
+const backgroundMusic = document.getElementById("backgroundMusic");
 
 const backgroundImage = new Image();
 backgroundImage.src = "assets/bedroom-comic.png";
@@ -89,19 +90,10 @@ let gameActive = false;
 let round = 0;
 let soundOn = true;
 let audioContext = null;
-let musicTimerId = null;
-let musicStep = 0;
 let hintMarker = null;
 let currentSurrenderPhrase = "";
 let hintPulseStarted = 0;
-
-const musicMelody = [
-  523.25, 659.25, 783.99, 659.25,
-  587.33, 698.46, 880, 698.46,
-  493.88, 659.25, 783.99, 659.25,
-  523.25, 659.25, 880, 783.99
-];
-const musicBass = [261.63, 293.66, 246.94, 261.63];
+backgroundMusic.volume = 0.42;
 
 function shuffle(list) {
   return [...list].sort(() => Math.random() - 0.5);
@@ -301,58 +293,33 @@ function updateTimer() {
 
 function tone(frequency, duration) {
   if (!soundOn) return;
-  audioContext ||= new AudioContext();
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  audioContext ||= new AudioContextClass();
+  audioContext.resume();
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
   oscillator.frequency.value = frequency;
-  gain.gain.setValueAtTime(0.07, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.1, audioContext.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
   oscillator.start();
   oscillator.stop(audioContext.currentTime + duration);
 }
 
-function playMusicVoice(frequency, duration, volume, type = "triangle", delay = 0) {
-  if (!soundOn || !audioContext) return;
-  const startAt = audioContext.currentTime + delay;
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  oscillator.type = type;
-  oscillator.frequency.value = frequency;
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-  gain.gain.setValueAtTime(0.001, startAt);
-  gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.018);
-  gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
-  oscillator.start(startAt);
-  oscillator.stop(startAt + duration + 0.03);
-}
-
-function playMusicStep() {
-  const melodyNote = musicMelody[musicStep % musicMelody.length];
-  playMusicVoice(melodyNote, 0.42, 0.025);
-  playMusicVoice(melodyNote * 2, 0.2, 0.008, "sine", 0.045);
-  if (musicStep % 4 === 0) {
-    const bassNote = musicBass[Math.floor(musicStep / 4) % musicBass.length];
-    playMusicVoice(bassNote, 0.9, 0.018, "sine");
-    playMusicVoice(bassNote * 1.5, 0.7, 0.008, "triangle", 0.08);
-  }
-  musicStep += 1;
-}
-
 function startBackgroundMusic() {
-  if (!soundOn || musicTimerId) return;
-  audioContext ||= new AudioContext();
-  audioContext.resume();
-  musicStep = 0;
-  playMusicStep();
-  musicTimerId = setInterval(playMusicStep, 430);
+  if (!soundOn) return;
+  backgroundMusic.currentTime = 0;
+  backgroundMusic.play().catch(() => {
+    soundOn = false;
+    document.getElementById("soundButton").style.opacity = ".4";
+    document.getElementById("soundButton").title = "点击开启声音";
+  });
 }
 
 function stopBackgroundMusic() {
-  clearInterval(musicTimerId);
-  musicTimerId = null;
+  backgroundMusic.pause();
 }
 
 function applyMistake() {
