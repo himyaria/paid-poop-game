@@ -13,11 +13,17 @@ const hintModal = document.getElementById("hintModal");
 const surrenderInput = document.getElementById("surrenderInput");
 const surrenderPhraseElement = document.getElementById("surrenderPhrase");
 const hintError = document.getElementById("hintError");
+const resultRanking = document.getElementById("resultRanking");
+const globalRank = document.getElementById("globalRank");
+const clearTime = document.getElementById("clearTime");
+const beatPercent = document.getElementById("beatPercent");
 const introMusic = document.getElementById("introMusic");
 const backgroundMusic = document.getElementById("backgroundMusic");
 
 const backgroundImage = new Image();
 backgroundImage.src = "assets/bedroom-comic.png";
+const cleanBackgroundImage = new Image();
+cleanBackgroundImage.src = "assets/bedroom-clean-ai.png";
 const spriteImage = new Image();
 spriteImage.src = "assets/items.png";
 const extraSpriteImage = new Image();
@@ -35,15 +41,15 @@ const items = [
 ];
 
 const nativeItems = [
-  { name: "拖鞋", x: 236, y: 560, hit: 38, crop: { x: 206, y: 535, w: 82, h: 50 } },
-  { name: "绿植", x: 72, y: 510, hit: 58, crop: { x: 18, y: 438, w: 108, h: 128 } },
-  { name: "绿色书", x: 394, y: 622, hit: 42, crop: { x: 354, y: 590, w: 92, h: 58 } },
-  { name: "台灯", x: 64, y: 350, hit: 54, crop: { x: 24, y: 292, w: 88, h: 120 } },
-  { name: "背包", x: 1000, y: 590, hit: 58, crop: { x: 948, y: 525, w: 105, h: 120 } },
-  { name: "藤篮", x: 666, y: 450, hit: 56, crop: { x: 615, y: 392, w: 105, h: 125 } },
-  { name: "画框", x: 936, y: 330, hit: 44, crop: { x: 890, y: 292, w: 92, h: 80 } },
-  { name: "衣架", x: 1135, y: 216, hit: 60, crop: { x: 1082, y: 145, w: 115, h: 150 } },
-  { name: "棕色圆帽", x: 414, y: 222, hit: 44, crop: { x: 378, y: 178, w: 82, h: 104 } }
+  { name: "拖鞋", x: 236, y: 560, hit: 38, crop: { x: 206, y: 535, w: 82, h: 50 }, cleanCrop: { x: 182, y: 510, w: 135, h: 92 } },
+  { name: "绿植", x: 72, y: 510, hit: 58, crop: { x: 18, y: 438, w: 108, h: 128 }, cleanCrop: { x: 0, y: 410, w: 145, h: 190 } },
+  { name: "绿色书", x: 394, y: 622, hit: 42, crop: { x: 354, y: 590, w: 92, h: 58 }, cleanCrop: { x: 330, y: 565, w: 140, h: 105 } },
+  { name: "台灯", x: 64, y: 350, hit: 54, crop: { x: 24, y: 292, w: 88, h: 120 }, cleanCrop: { x: 0, y: 270, w: 135, h: 170 } },
+  { name: "背包", x: 1000, y: 590, hit: 58, crop: { x: 948, y: 525, w: 105, h: 120 }, cleanCrop: { x: 920, y: 500, w: 165, h: 180 } },
+  { name: "藤篮", x: 666, y: 450, hit: 56, crop: { x: 615, y: 392, w: 105, h: 125 }, cleanCrop: { x: 590, y: 365, w: 155, h: 190 } },
+  { name: "画框", x: 936, y: 330, hit: 44, crop: { x: 890, y: 292, w: 92, h: 80 }, cleanCrop: { x: 870, y: 270, w: 135, h: 125 } },
+  { name: "衣架", x: 1135, y: 216, hit: 60, crop: { x: 1082, y: 145, w: 115, h: 150 }, cleanCrop: { x: 1055, y: 115, w: 175, h: 205 } },
+  { name: "棕色圆帽", x: 414, y: 222, hit: 44, crop: { x: 378, y: 178, w: 82, h: 104 }, cleanCrop: { x: 355, y: 150, w: 125, h: 155 } }
 ];
 
 const surrenderPhrases = ["我是大笨蛋", "我真的找不到", "请给我一点提示", "眼睛投降了"];
@@ -92,6 +98,7 @@ let round = 0;
 let soundOn = true;
 let audioContext = null;
 let hintMarker = null;
+let wrongMarker = null;
 let currentSurrenderPhrase = "";
 let hintPulseStarted = 0;
 introMusic.volume = 0.48;
@@ -157,11 +164,56 @@ function drawBackgroundPatch(shape) {
   ctx.restore();
 }
 
+function drawCleanNativePatch(item) {
+  if (!cleanBackgroundImage.complete || !item.crop) return;
+  const cleanCrop = item.cleanCrop || item.crop;
+  const padding = Math.max(8, Math.round(Math.min(cleanCrop.w, cleanCrop.h) * 0.12));
+  const x = Math.max(0, cleanCrop.x - padding);
+  const y = Math.max(0, cleanCrop.y - padding);
+  const width = Math.min(canvas.width - x, cleanCrop.w + padding * 2);
+  const height = Math.min(canvas.height - y, cleanCrop.h + padding * 2);
+  const patchCanvas = document.createElement("canvas");
+  patchCanvas.width = Math.ceil(width);
+  patchCanvas.height = Math.ceil(height);
+  const patchContext = patchCanvas.getContext("2d");
+  const scaleX = cleanBackgroundImage.naturalWidth / canvas.width;
+  const scaleY = cleanBackgroundImage.naturalHeight / canvas.height;
+  patchContext.drawImage(
+    cleanBackgroundImage,
+    x * scaleX,
+    y * scaleY,
+    width * scaleX,
+    height * scaleY,
+    0,
+    0,
+    width,
+    height
+  );
+  patchContext.globalCompositeOperation = "destination-in";
+  const feather = patchContext.createRadialGradient(
+    width / 2,
+    height / 2,
+    Math.min(width, height) * 0.28,
+    width / 2,
+    height / 2,
+    Math.max(width, height) * 0.68
+  );
+  feather.addColorStop(0, "rgba(0,0,0,1)");
+  feather.addColorStop(0.72, "rgba(0,0,0,0.96)");
+  feather.addColorStop(1, "rgba(0,0,0,0)");
+  patchContext.fillStyle = feather;
+  patchContext.fillRect(0, 0, width, height);
+  ctx.drawImage(patchCanvas, x, y);
+}
+
 function drawScene() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (backgroundImage.complete) {
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
   }
+  sceneObjects.forEach((item) => {
+    if (item.kind === "native" && item.found) drawCleanNativePatch(item);
+  });
   sceneObjects.forEach((item) => {
     if (item.kind === "sprite" && !item.found && spriteImage.complete) {
       drawSprite(item, item.x, item.y, item.size, item.angle);
@@ -197,6 +249,30 @@ function drawScene() {
     ctx.fill();
     ctx.restore();
     requestAnimationFrame(drawScene);
+  }
+  if (wrongMarker) {
+    const elapsed = performance.now() - wrongMarker.started;
+    const progress = Math.min(elapsed / 650, 1);
+    const size = 18 + Math.sin(progress * Math.PI) * 10;
+    ctx.save();
+    ctx.globalAlpha = 1 - progress;
+    ctx.strokeStyle = "#ff4938";
+    ctx.shadowColor = "#ff4938";
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 7;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(wrongMarker.x - size, wrongMarker.y - size);
+    ctx.lineTo(wrongMarker.x + size, wrongMarker.y + size);
+    ctx.moveTo(wrongMarker.x + size, wrongMarker.y - size);
+    ctx.lineTo(wrongMarker.x - size, wrongMarker.y + size);
+    ctx.stroke();
+    ctx.restore();
+    if (progress < 1) {
+      requestAnimationFrame(drawScene);
+    } else {
+      wrongMarker = null;
+    }
   }
 }
 
@@ -310,6 +386,61 @@ function tone(frequency, duration) {
   oscillator.stop(audioContext.currentTime + duration);
 }
 
+function playVictoryFanfare() {
+  if (!soundOn) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  audioContext ||= new AudioContextClass();
+  audioContext.resume();
+  const notes = [
+    [523.25, 0, 0.14],
+    [659.25, 0.14, 0.14],
+    [783.99, 0.28, 0.18],
+    [659.25, 0.47, 0.11],
+    [880, 0.58, 0.22],
+    [1046.5, 0.81, 0.42]
+  ];
+  notes.forEach(([frequency, delay, duration]) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.value = frequency;
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    const start = audioContext.currentTime + delay;
+    gain.gain.setValueAtTime(0.001, start);
+    gain.gain.exponentialRampToValueAtTime(0.14, start + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    oscillator.start(start);
+    oscillator.stop(start + duration);
+  });
+}
+
+function normalCdf(value) {
+  const sign = value < 0 ? -1 : 1;
+  const x = Math.abs(value) / Math.sqrt(2);
+  const t = 1 / (1 + 0.3275911 * x);
+  const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return 0.5 * (1 + sign * erf);
+}
+
+function calculateGlobalRanking(elapsedSeconds) {
+  const playerPool = 100000;
+  const averageSeconds = 60;
+  const standardDeviation = 25;
+  const fasterPercentile = normalCdf((elapsedSeconds - averageSeconds) / standardDeviation);
+  const beaten = (1 - fasterPercentile) * 100;
+  const rank = Math.max(1, Math.min(playerPool, Math.round(fasterPercentile * playerPool)));
+  return {
+    rank,
+    beaten: Math.min(99.99, Math.max(0.01, beaten))
+  };
+}
+
+function formatDuration(seconds) {
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 function startBackgroundMusic() {
   if (!soundOn) return;
   introMusic.pause();
@@ -347,6 +478,18 @@ function resetSelection() {
   drawScene();
 }
 
+function findSelectedObject() {
+  if (!selectedObject?.target) return false;
+  selectedObject.found = true;
+  targets.find((item) => item.name === selectedObject.name).found = true;
+  if (hintMarker?.name === selectedObject.name) hintMarker = null;
+  renderTargets();
+  tone(520, 0.22);
+  resetSelection();
+  if (targets.every((item) => item.found)) finishGame(true);
+  return true;
+}
+
 function positionMobileScene() {
   if (window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches) {
     sceneWrap.scrollLeft = Math.max(0, (sceneWrap.scrollWidth - sceneWrap.clientWidth) / 2);
@@ -367,6 +510,7 @@ function startGame() {
   selectedPoint = null;
   selectedObject = null;
   hintMarker = null;
+  wrongMarker = null;
   generateObjects();
   renderTargets();
   updateTimer();
@@ -394,11 +538,24 @@ function finishGame(won) {
   document.getElementById("resultSymbol").textContent = won ? "✓" : "⌛";
   document.getElementById("resultEyebrow").textContent = won ? "寻物完成" : "时间到";
   document.getElementById("resultTitle").textContent = won ? "全部找到了！" : "差一点就找齐了";
-  document.getElementById("resultText").textContent = won
-    ? `你还剩 ${Math.floor(timeLeft / 60)} 分 ${timeLeft % 60} 秒，眼力相当不错。`
-    : `本局找到 ${targets.filter((item) => item.found).length} 件物品，再试一次一定更快。`;
+  if (won) {
+    const elapsedSeconds = 300 - timeLeft;
+    const ranking = calculateGlobalRanking(elapsedSeconds);
+    document.getElementById("resultText").textContent = "眼力和速度都相当不错，看看你排在全球什么位置。";
+    globalRank.textContent = ranking.rank.toLocaleString("zh-CN");
+    clearTime.textContent = formatDuration(elapsedSeconds);
+    beatPercent.textContent = `${ranking.beaten.toFixed(2)}%`;
+    resultRanking.hidden = false;
+  } else {
+    document.getElementById("resultText").textContent = `本局找到 ${targets.filter((item) => item.found).length} 件物品，再试一次一定更快。`;
+    resultRanking.hidden = true;
+  }
   resultModal.classList.add("visible");
-  tone(won ? 660 : 180, 0.5);
+  if (won) {
+    playVictoryFanfare();
+  } else {
+    tone(180, 0.5);
+  }
 }
 
 canvas.addEventListener("click", (event) => {
@@ -412,6 +569,14 @@ canvas.addEventListener("click", (event) => {
     .map((item) => ({ item, distance: Math.hypot(item.x - x, item.y - y) }))
     .filter(({ item, distance }) => distance < (item.hit || item.size * 0.7))
     .sort((a, b) => a.distance - b.distance)[0]?.item || null;
+  if (window.matchMedia("(max-width: 600px)").matches) {
+    if (!findSelectedObject()) {
+      wrongMarker = { x, y, started: performance.now() };
+      applyMistake();
+      resetSelection();
+    }
+    return;
+  }
   const displayX = event.clientX - rect.left;
   const displayY = event.clientY - rect.top;
   selectionPopover.style.left = `${Math.min(Math.max(displayX, 112), rect.width - 112)}px`;
@@ -423,15 +588,7 @@ canvas.addEventListener("click", (event) => {
 document.getElementById("confirmButton").addEventListener("click", (event) => {
   event.stopPropagation();
   if (!gameActive) return;
-  if (selectedObject?.target) {
-    selectedObject.found = true;
-    targets.find((item) => item.name === selectedObject.name).found = true;
-    if (hintMarker?.name === selectedObject.name) hintMarker = null;
-    renderTargets();
-    tone(520, 0.22);
-    resetSelection();
-    if (targets.every((item) => item.found)) finishGame(true);
-  } else {
+  if (!findSelectedObject()) {
     applyMistake();
     resetSelection();
   }
@@ -493,6 +650,7 @@ function submitHint() {
 }
 
 backgroundImage.onload = drawScene;
+cleanBackgroundImage.onload = drawScene;
 spriteImage.onload = drawScene;
 extraSpriteImage.onload = drawScene;
 

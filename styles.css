@@ -62,25 +62,17 @@ button {
   height: 42px;
   display: grid;
   place-items: center;
-  background: var(--gold);
-  color: #242016;
-  border: 1px solid #f0ca76;
+  overflow: hidden;
+  background: radial-gradient(circle at 35% 28%, #fff0a6 0, #c38716 52%, #50300b 100%);
+  border: 1px solid #f5ce65;
+  box-shadow: inset 0 0 10px rgba(255, 247, 196, 0.4), 0 3px 10px rgba(0, 0, 0, 0.32);
 }
 
-.brand-mark svg {
-  width: 31px;
-  height: 31px;
-  fill: #4c2f1e;
-  stroke: #23170f;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.brand-mark-line {
-  fill: none;
-  stroke: #f0ca76;
-  stroke-width: 3;
+.brand-mark img {
+  width: 39px;
+  height: 39px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(55, 32, 4, 0.45));
 }
 
 .brand h1,
@@ -91,7 +83,9 @@ button {
 }
 
 .brand h1 {
-  font: 27px/1 "Ma Shan Zheng", cursive;
+  color: #f6c85e;
+  font: 25px/1 "ZCOOL KuaiLe", "Noto Sans SC", sans-serif;
+  text-shadow: 0 1px 0 #5e3909, 0 2px 8px rgba(225, 173, 70, 0.2);
 }
 
 .brand p {
@@ -460,20 +454,21 @@ button {
   font-size: 34px;
 }
 
-.poop-symbol svg {
-  width: 38px;
-  height: 38px;
-  fill: #7b4a2d;
-  stroke: #2b1c12;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.poop-symbol {
+  overflow: hidden;
+  background: radial-gradient(circle at 35% 28%, rgba(255, 240, 166, 0.18), rgba(195, 135, 22, 0.04) 60%, transparent 70%);
 }
 
-.poop-line {
-  fill: none;
-  stroke: #f0ca76;
-  stroke-width: 3;
+.poop-symbol img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.4));
+}
+
+#startModal .eyebrow {
+  font-family: "ZCOOL KuaiLe", "Noto Sans SC", sans-serif;
+  font-size: 12px;
 }
 
 .modal h2 {
@@ -537,6 +532,76 @@ button {
   min-height: 20px;
   margin-bottom: 14px !important;
   color: #ff8f80 !important;
+}
+
+.result-ranking {
+  margin: -4px 0 22px;
+  border-block: 1px solid rgba(225, 173, 70, 0.35);
+  text-align: left;
+}
+
+.result-ranking[hidden] {
+  display: none;
+}
+
+.result-rank-main {
+  padding: 15px 2px 14px;
+  text-align: center;
+}
+
+.result-rank-main span,
+.result-stats span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.result-rank-main strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--gold);
+  font-size: 20px;
+}
+
+.result-rank-main b {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--line);
+}
+
+.result-stats div {
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.result-stats div + div {
+  border-left: 1px solid var(--line);
+}
+
+.result-stats strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-stats div:last-child strong {
+  color: #b8e1c2;
+}
+
+.result-ranking small {
+  display: block;
+  padding: 7px 0;
+  color: #777468;
+  font-size: 8px;
+  text-align: center;
 }
 
 .primary-button:hover,
@@ -623,9 +688,9 @@ button {
     flex: 0 0 auto;
   }
 
-  .brand-mark svg {
-    width: 26px;
-    height: 26px;
+  .brand-mark img {
+    width: 30px;
+    height: 30px;
   }
 
   .brand h1 {
@@ -814,6 +879,18 @@ button {
   .surrender-input {
     min-height: 48px;
     font-size: 15px;
+  }
+
+  .result-ranking {
+    margin-bottom: 18px;
+  }
+
+  .result-rank-main {
+    padding-block: 12px;
+  }
+
+  .result-rank-main b {
+    font-size: 27px;
   }
 }
 
