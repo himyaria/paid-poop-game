@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;600;700;800&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=brand-1">
+  <link rel="stylesheet" href="styles.css?v=brand-2">
 </head>
 <body>
   <main class="game-shell">
@@ -18,7 +18,7 @@
         </span>
         <div>
           <h1>带薪拉屎玩什么</h1>
-          <p>今日场景 · 漫画卧室</p>
+          <p id="sceneSubtitle">今日场景 · 漫画卧室</p>
         </div>
       </div>
 
@@ -76,14 +76,17 @@
         <img src="assets/poop-logo-3d.png" alt="">
       </div>
       <span class="eyebrow">带薪拉屎玩什么</span>
-      <h2>卧室里藏着什么？</h2>
-      <p>在五分钟内找到清单中的全部物品。它们会伪装成家具细节或只露出一角，每次点错会扣除 5 秒。</p>
+      <h2 id="startTitle">卧室里藏着什么？</h2>
+      <p id="startDescription">在五分钟内找到清单中的全部物品。它们会伪装成家具细节或只露出一角，每次点错会扣除 5 秒。</p>
       <button class="primary-button" id="startButton" type="button">开始寻找</button>
     </section>
   </div>
 
   <div class="modal-backdrop" id="resultModal">
     <section class="modal">
+      <div class="result-logo">
+        <img src="assets/poop-logo-3d.png" alt="带薪拉屎玩什么">
+      </div>
       <div class="modal-symbol" id="resultSymbol">✓</div>
       <span class="eyebrow" id="resultEyebrow">寻物完成</span>
       <h2 id="resultTitle">全部找到了！</h2>
@@ -103,7 +106,6 @@
             <strong id="beatPercent">76.21%</strong>
           </div>
         </div>
-        <small>基于 10 万名玩家的模拟全球榜 · 60 秒为平均水平</small>
       </div>
       <button class="primary-button" id="againButton" type="button">再玩一局</button>
     </section>
@@ -126,6 +128,6 @@
 
   <audio id="introMusic" src="assets/intro-music.wav" preload="auto" loop></audio>
   <audio id="backgroundMusic" src="assets/background-music.wav" preload="auto" loop></audio>
-  <script src="game.js?v=result-2"></script>
+  <script src="game.js?v=beach-15"></script>
 </body>
 </html>

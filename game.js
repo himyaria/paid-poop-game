@@ -17,6 +17,11 @@ const resultRanking = document.getElementById("resultRanking");
 const globalRank = document.getElementById("globalRank");
 const clearTime = document.getElementById("clearTime");
 const beatPercent = document.getElementById("beatPercent");
+const sceneSubtitle = document.getElementById("sceneSubtitle");
+const startTitle = document.getElementById("startTitle");
+const startDescription = document.getElementById("startDescription");
+const tipText = document.getElementById("tipText");
+const againButton = document.getElementById("againButton");
 const introMusic = document.getElementById("introMusic");
 const backgroundMusic = document.getElementById("backgroundMusic");
 
@@ -28,6 +33,7 @@ const spriteImage = new Image();
 spriteImage.src = "assets/items.png";
 const extraSpriteImage = new Image();
 extraSpriteImage.src = "assets/extra-items.png";
+const beachItemImages = new Map();
 
 const items = [
   { name: "金钥匙", icon: "🔑", col: 0, row: 0 },
@@ -50,6 +56,50 @@ const nativeItems = [
   { name: "画框", x: 936, y: 330, hit: 44, crop: { x: 890, y: 292, w: 92, h: 80 }, cleanCrop: { x: 870, y: 270, w: 135, h: 125 } },
   { name: "衣架", x: 1135, y: 216, hit: 60, crop: { x: 1082, y: 145, w: 115, h: 150 }, cleanCrop: { x: 1055, y: 115, w: 175, h: 205 } },
   { name: "棕色圆帽", x: 414, y: 222, hit: 44, crop: { x: 378, y: 178, w: 82, h: 104 }, cleanCrop: { x: 355, y: 150, w: 125, h: 155 } }
+];
+
+const beachItems = [
+  { name: "旧望远镜", group: "scene", col: 0, row: 0, x: 1160, y: 241, width: 72, height: 47, angle: -0.06, hit: 42 },
+  { name: "编织团扇", group: "scene", col: 1, row: 0, x: 1095, y: 547, width: 76, height: 65, angle: 0.36, hit: 45 },
+  { name: "相机皮套", group: "scene", col: 2, row: 0, x: 735, y: 605, width: 68, height: 53, angle: -0.12, hit: 42 },
+  { name: "蓝色搪瓷杯", group: "scene", col: 3, row: 0, x: 791, y: 421, width: 43, height: 45, angle: 0, hit: 34 },
+  { name: "旧绳圈", group: "scene", col: 4, row: 0, x: 1115, y: 688, width: 112, height: 62, angle: 0.05, hit: 59 },
+  { name: "草编空顶帽", group: "scene", col: 0, row: 1, x: 825, y: 494, width: 106, height: 61, angle: -0.16, hit: 53 },
+  { name: "琥珀防晒霜", group: "scene", col: 1, row: 1, x: 1210, y: 245, width: 34, height: 60, angle: 0, hit: 34 },
+  { name: "木质帆船", group: "scene", col: 2, row: 1, x: 1040, y: 245, width: 68, height: 61, angle: 0, hit: 39 },
+  { name: "旧沙滩球", group: "scene", col: 3, row: 1, x: 1170, y: 570, width: 78, height: 78, angle: 0.08, hit: 48 },
+  { name: "带扣野餐篮", group: "scene", col: 4, row: 1, x: 555, y: 615, width: 106, height: 101, angle: -0.04, hit: 58 },
+  { name: "黄铜钥匙", group: "hidden", col: 0, row: 0, x: 197, y: 657, width: 50, height: 62, angle: 1.0, hit: 37 },
+  { name: "蓝灰围巾", group: "hidden", col: 1, row: 0, x: 930, y: 665, width: 330, height: 108, angle: -0.04, hit: 120, stretch: true },
+  { name: "黄铜指南针", group: "hidden", col: 2, row: 0, x: 754, y: 421, width: 36, height: 36, angle: 0.05, hit: 30 },
+  { name: "贝壳香皂", group: "hidden", col: 3, row: 0, x: 935, y: 665, width: 47, height: 36, angle: 0.2, hit: 32 },
+  { name: "棕色钢笔", group: "hidden", col: 4, row: 0, x: 905, y: 338, width: 72, height: 18, angle: -0.03, hit: 31 },
+  { name: "行李牌", group: "hidden", col: 0, row: 1, x: 735, y: 122, width: 50, height: 59, angle: 0.03, hit: 37 },
+  { name: "花纹布袋", group: "hidden", col: 1, row: 1, x: 684, y: 355, width: 66, height: 44, angle: 0.12, hit: 39, occluders: [{ type: "rect", x: 653, y: 353, w: 59, h: 37 }] },
+  { name: "干木槿花", group: "hidden", col: 2, row: 1, x: 600, y: 300, width: 42, height: 37, angle: -0.2, hit: 30 },
+  { name: "星纹石头", group: "hidden", col: 3, row: 1, x: 402, y: 648, width: 18, height: 14, angle: 0.13, hit: 20 },
+  { name: "木质书签", group: "hidden", col: 4, row: 1, x: 438, y: 390, width: 66, height: 18, angle: 0.42, hit: 31 }
+];
+
+const levels = [
+  {
+    name: "漫画卧室",
+    title: "卧室里藏着什么？",
+    description: "在五分钟内找到清单中的全部物品。它们会伪装成家具细节或只露出一角，每次点错会扣除 5 秒。",
+    tip: "寻找藏入场景的物品，也别忽略房间原有陈设",
+    image: "assets/bedroom-comic.png",
+    cleanImage: "assets/bedroom-clean-ai.png",
+    type: "bedroom"
+  },
+  {
+    name: "真实海滩度假",
+    title: "海滩假期藏着什么？",
+    description: "在阳光海滩中找到 20 件度假物品。留心沙地、躺椅和海滩酒吧，每次点错会扣除 5 秒。",
+    tip: "寻找藏入场景的物品，也别忽略房间原有陈设",
+    image: "assets/beach-vacation-complex.png",
+    cleanImage: "",
+    type: "beach"
+  }
 ];
 
 const surrenderPhrases = ["我是大笨蛋", "我真的找不到", "请给我一点提示", "眼睛投降了"];
@@ -101,6 +151,7 @@ let hintMarker = null;
 let wrongMarker = null;
 let currentSurrenderPhrase = "";
 let hintPulseStarted = 0;
+let currentLevelIndex = new URLSearchParams(window.location.search).get("level") === "2" ? 1 : 0;
 introMusic.volume = 0.48;
 backgroundMusic.volume = 0.78;
 
@@ -150,6 +201,38 @@ function drawExtraSprite(item) {
   ctx.restore();
 }
 
+function drawBeachSprite(item) {
+  const image = getBeachItemImage(item);
+  if (!image.complete || !image.naturalWidth) return;
+  const maxSize = Math.max(item.width, item.height);
+  const scale = maxSize / Math.max(image.naturalWidth, image.naturalHeight);
+  const drawWidth = item.stretch ? item.width : image.naturalWidth * scale;
+  const drawHeight = item.stretch ? item.height : image.naturalHeight * scale;
+  ctx.save();
+  ctx.filter = item.group === "hidden"
+    ? "saturate(0.68) contrast(0.88) brightness(0.9)"
+    : "saturate(0.76) contrast(0.92) brightness(0.94)";
+  ctx.translate(item.x, item.y);
+  ctx.rotate(item.angle);
+  ctx.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+  ctx.restore();
+}
+
+function getBeachItemImage(item) {
+  const index = item.row * 5 + item.col;
+  const key = `${item.group}-${index}`;
+  if (!beachItemImages.has(key)) {
+    const image = new Image();
+    image.src = `assets/beach-items-v2/${key}.png`;
+    image.onload = () => {
+      drawScene();
+      if (levels[currentLevelIndex]?.type === "beach") renderTargets();
+    };
+    beachItemImages.set(key, image);
+  }
+  return beachItemImages.get(key);
+}
+
 function drawBackgroundPatch(shape) {
   if (!backgroundImage.complete) return;
   ctx.save();
@@ -165,7 +248,7 @@ function drawBackgroundPatch(shape) {
 }
 
 function drawCleanNativePatch(item) {
-  if (!cleanBackgroundImage.complete || !item.crop) return;
+  if (!levels[currentLevelIndex].cleanImage || !cleanBackgroundImage.complete || !item.crop) return;
   const cleanCrop = item.cleanCrop || item.crop;
   const padding = Math.max(8, Math.round(Math.min(cleanCrop.w, cleanCrop.h) * 0.12));
   const x = Math.max(0, cleanCrop.x - padding);
@@ -222,6 +305,10 @@ function drawScene() {
     if (item.kind === "extra" && !item.found && extraSpriteImage.complete) {
       drawExtraSprite(item);
     }
+    if (item.kind === "beach" && !item.found) {
+      drawBeachSprite(item);
+      item.occluders?.forEach(drawBackgroundPatch);
+    }
   });
   if (selectedPoint) {
     ctx.save();
@@ -277,6 +364,16 @@ function drawScene() {
 }
 
 function generateObjects() {
+  if (levels[currentLevelIndex].type === "beach") {
+    sceneObjects = beachItems.map((item) => ({
+      ...item,
+      kind: "beach",
+      found: false,
+      target: true
+    }));
+    targets = sceneObjects.map((item) => ({ ...item }));
+    return;
+  }
   const spriteObjects = shuffle(items).map((item) => ({
     ...item,
     ...pickPlacement(item.name),
@@ -312,6 +409,8 @@ function renderTargets() {
     element.className = `target-item${item.found ? " found" : ""}`;
     const sprite = item.kind === "native"
       ? createNativeIcon(item)
+      : item.kind === "beach"
+        ? createBeachIcon(item)
       : item.kind === "extra"
         ? createExtraIcon(item)
         : createSpriteIcon(item);
@@ -360,6 +459,22 @@ function createExtraIcon(item) {
   const icon = document.createElement("span");
   icon.className = "extra-icon";
   icon.style.backgroundPosition = `${item.col * 50}% 0`;
+  return icon;
+}
+
+function createBeachIcon(item) {
+  const icon = document.createElement("canvas");
+  icon.className = "native-icon";
+  icon.width = 70;
+  icon.height = 52;
+  const iconContext = icon.getContext("2d");
+  const image = getBeachItemImage(item);
+  if (image.complete && image.naturalWidth) {
+    const scale = Math.min(icon.width / image.naturalWidth, icon.height / image.naturalHeight);
+    const width = image.naturalWidth * scale;
+    const height = image.naturalHeight * scale;
+    iconContext.drawImage(image, (icon.width - width) / 2, (icon.height - height) / 2, width, height);
+  }
   return icon;
 }
 
@@ -425,12 +540,12 @@ function normalCdf(value) {
 }
 
 function calculateGlobalRanking(elapsedSeconds) {
-  const playerPool = 100000;
-  const averageSeconds = 60;
+  const playerPool = 7980;
+  const averageSeconds = 60.854;
   const standardDeviation = 25;
   const fasterPercentile = normalCdf((elapsedSeconds - averageSeconds) / standardDeviation);
   const beaten = (1 - fasterPercentile) * 100;
-  const rank = Math.max(1, Math.min(playerPool, Math.round(fasterPercentile * playerPool)));
+  const rank = Math.max(100, Math.min(9999, Math.round(fasterPercentile * playerPool)));
   return {
     rank,
     beaten: Math.min(99.99, Math.max(0.01, beaten))
@@ -500,6 +615,16 @@ function positionMobileScene() {
   }
 }
 
+function loadCurrentLevel() {
+  const level = levels[currentLevelIndex];
+  sceneSubtitle.textContent = `今日场景 · ${level.name}`;
+  startTitle.textContent = level.title;
+  startDescription.textContent = level.description;
+  tipText.textContent = level.tip;
+  backgroundImage.src = level.image;
+  cleanBackgroundImage.src = level.cleanImage || level.image;
+}
+
 function startGame() {
   clearInterval(timerId);
   stopBackgroundMusic();
@@ -546,9 +671,11 @@ function finishGame(won) {
     clearTime.textContent = formatDuration(elapsedSeconds);
     beatPercent.textContent = `${ranking.beaten.toFixed(2)}%`;
     resultRanking.hidden = false;
+    againButton.textContent = currentLevelIndex < levels.length - 1 ? "进入海滩关" : "重新挑战";
   } else {
     document.getElementById("resultText").textContent = `本局找到 ${targets.filter((item) => item.found).length} 件物品，再试一次一定更快。`;
     resultRanking.hidden = true;
+    againButton.textContent = "再试一次";
   }
   resultModal.classList.add("visible");
   if (won) {
@@ -599,7 +726,13 @@ document.getElementById("cancelButton").addEventListener("click", (event) => {
   resetSelection();
 });
 document.getElementById("startButton").addEventListener("click", startGame);
-document.getElementById("againButton").addEventListener("click", startGame);
+againButton.addEventListener("click", () => {
+  if (targets.length && targets.every((item) => item.found)) {
+    currentLevelIndex = (currentLevelIndex + 1) % levels.length;
+    loadCurrentLevel();
+  }
+  startGame();
+});
 document.getElementById("restartButton").addEventListener("click", startGame);
 document.getElementById("hintButton").addEventListener("click", () => {
   if (!gameActive || targets.every((item) => item.found)) return;
@@ -656,6 +789,7 @@ extraSpriteImage.onload = drawScene;
 
 document.addEventListener("pointerdown", startIntroMusic, { once: true });
 document.addEventListener("keydown", startIntroMusic, { once: true });
+loadCurrentLevel();
 startIntroMusic();
 
 let targetDragActive = false;
